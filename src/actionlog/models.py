@@ -1,19 +1,21 @@
-import dataclasses
 import datetime
+from redis_om import HashModel, Migrator, Field
+from django.core.cache import cache
 
 
-@dataclasses.dataclass
-class ActionLog:
-    id: int
+class ActionLog(HashModel):
     type_name: str
-    date: datetime.datetime
+    date: datetime.datetime = Field(sortable=True, index=True)
+    user_id: int = Field(index=True)
     comment: str
-    is_forecast: bool
+
+    class Meta:
+        global_key_prefix = 'actionlog'
+
+        @classmethod
+        @property
+        def database(cls):
+            return cache.client.get_client(write=True)
 
 
-@dataclasses.dataclass
-class ActionLogType:
-    category: str
-    name: str
-    interval: int
-    next: str
+Migrator().run()

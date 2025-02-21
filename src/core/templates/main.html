@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=600px, initial-scale=1">
+    <title>Test</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+          integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+          crossorigin="anonymous" referrerpolicy="no-referrer"/>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+</head>
+<body>
+<script src="static/mkreactor.js"></script>
+<script>
+
+    const today = () => {
+        let todayDate = new Date()
+        todayDate.setHours(0, 0, 0, 0)
+        return todayDate
+    }
+    const formatDate = (dt) => {
+        let diff = dt - today()
+        dayDiff = 86400000
+        let fuzzy = ''
+        if (diff < 0) fuzzy = 'Вчера, '
+        else if (diff > dayDiff) fuzzy = 'Завтра, '
+        time = dt.toLocaleTimeString().substring(0, 5)
+        return `${fuzzy}${time}`
+    }
+</script>
+<script>
+    class LogEntry {
+        constructor(type, date, id = '', comment = '', isForecast = false) {
+            this.id = id
+            this.type = type
+            this.date = date
+            this.comment = comment
+            this.isForecast = isForecast
+        }
+
+        formattedDate = function () {
+            return formatDate(this.date)
+        }
+
+        copy = function () {
+            return new LogEntry(this.type, new Date(this.date.getTime()), '', this.comment)
+        }
+    }
+
+    class LogType {
+        constructor(name, interval, category) {
+            this.name = name
+            this.interval = interval
+            this.next = this
+            this.category = category
+        }
+
+        setNext = function (next) {
+            return this.next = next
+        }
+
+        getNext = function () {
+            return this.next
+        }
+    }
+
+    function getLogsForPrediction(logs) {
+        let res = new Map()
+        for (let log of logs) {
+            res.set(log.type.category, log.copy())
+        }
+        return Array.from(res.values())
+    }
+
+    function* iter(startDate, endDate, log) {
+        let dt = startDate
+        dt.setMinutes(dt.getMinutes() + log.type.interval)
+        while (dt < endDate) {
+            log.type = log.type.getNext()
+            yield new Date(dt.getTime())
+            dt.setMinutes(dt.getMinutes() + log.type.interval)
+        }
+    }
+
+    function getLogsWithPredictions(logs, endDate) {
+        let result = [...logs]
+        for (let log of getLogsForPrediction(logs)) {
+            for (let dt of iter(log.date, endDate, log)) {
+                result.push(new LogEntry(log.type, dt, '', '', true))
+            }
+        }
+        result.sort((a, b) => a.date.getTime() - b.date.getTime())
+        return result
+    }
+
+    function makeConfig() {
+        let AWAKE = new LogType('Бодрствование', 60 * 3, 'AWAKE-SLEEP'),
+            ASLEEP = new LogType('Сон', 60 * 1.5, 'AWAKE-SLEEP'),
+            MEALS = new LogType('Еда', 60 * 4, 'MEALS'),
+            POO = new LogType('Подгузник', 60 * 4, 'POO'),
+            TOOTH = new LogType('Зубы', 60 * 12, 'TOOTH')
+        AWAKE.setNext(ASLEEP)
+        ASLEEP.setNext(AWAKE)
+        return [AWAKE, ASLEEP, MEALS, POO, TOOTH]
+    }
+
+    function getLogTypesMap(types) {
+        const typesMap = {}
+        for (v of types) {
+            typesMap[v.name] = v
+        }
+        return typesMap
+    }
+
+    function getData() {
+        const types = getLogTypesMap(makeConfig())
+        fetch('/api/actions/', {}).then(response => response.json()).then(
+            json => {
+                window.rootComponent.data.logs.splice(0, window.rootComponent.data.logs.length)
+                window.rootComponent.data.logs.push(...json.map(v => {
+                    return new LogEntry(
+                        types[v.type_name],
+                        new Date(v.date),
+                        v.pk,
+                        v.comment,
+                    )
+                }))
+            }
+        )
+    }
+
+    function getLogIndexByID(id, logs) {
+        for (let indx in logs) {
+            if (logs[indx].id === id) return indx
+        }
+        return -1
+    }
+
+    const init = () => {
+        registerComponent('create-form', () => {
+            return {
+                data: {
+                    logtypes: [],
+                    objId: '',
+                    entryData: {
+                        date: new Date(),
+                        type: null,
+                        comment: ''
+                    }
+                },
+                actions: {
+                    formatDate: function (d) {
+                        return (new Date(d.getTime() - d.getTimezoneOffset() * 60 * 1000)).toISOString().substring(0, 16)
+                    },
+                    selectType: function (obj, newValue) {
+                        obj.type = newValue
+                    },
+                    setComment: function (obj, newValue) {
+                        obj.comment = newValue
+                    },
+                    setDatetime: function (obj, newValue) {
+                        obj.date = new Date(newValue + (new Date()).getTimezoneOffset() * 60 * 1000)
+                    },
+                    clear: function () {
+                        this.objId = ''
+                        this.entryData.date = new Date()
+                        this.entryData.type = {}
+                        this.entryData.comment = ''
+                    },
+                    create: function (events) {
+                        events.create(this.entryData)
+                    },
+                    update: function (events) {
+                        events.update(this.objId, this.entryData)
+                        this.objId = ''
+                        this.entryData.date = new Date()
+                        this.entryData.type = {}
+                        this.entryData.comment = ''
+                    }
+                },
+                events: {
+                    create: (entryData) => null,
+                    update: (index, entryData) => null,
+                }
+            }
+        })
+        window.rootComponent = new Component({
+            root: document.querySelector('#root'),
+            data: {
+                logs: [],
+                logTypes: makeConfig(),
+                showCreationForm: false,
+            },
+            actions: {
+                createLog: function (entryData) {
+                    fetch('/api/actions/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type_name: entryData.type.name,
+                            date: entryData.date.toISOString(),
+                            comment: entryData.comment
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(json => {
+                            this.logs.push(new LogEntry(
+                                getLogTypesMap(this.logTypes)[json.type_name], new Date(json.date), json.pk, json.comment
+                            ))
+                        })
+                },
+                updateLog: function (id, entryData) {
+                    fetch(`/api/actions/${id}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type_name: entryData.type.name,
+                            date: entryData.date.toISOString(),
+                            comment: entryData.comment
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(json => {
+                            this.logs[getLogIndexByID(id, this.logs)] = new LogEntry(
+                                getLogTypesMap(this.logTypes)[json.type_name], new Date(json.date), json.pk, json.comment
+                            )
+                            this.logs.sort((a, b) => a.date.getTime() - b.date.getTime())
+                        })
+                },
+                removeLog: function (item) {
+                    fetch(`/api/actions/${item.id}`, {method: 'DELETE'})
+                        .then(response => {
+                            this.logs.splice(this.logs.indexOf(item), 1)
+                        })
+                },
+                clearLogs: function () {
+                    fetch('/api/actions/', {method: 'DELETE'})
+                        .then(response => {
+                            this.logs.splice(0, this.logs.length)
+                        })
+                },
+                selectNewLog: function (item) {
+                    fetch('/api/actions/', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            type_name: item.type.name,
+                            date: (new Date()).toISOString(),
+                            comment: item.comment
+                        })
+                    })
+                        .then(response => response.json())
+                        .then(json => {
+                            let log = new LogEntry(
+                                getLogTypesMap(this.logTypes)[json.type_name], new Date(json.date), json.pk, json.comment
+                            )
+                            this.logs.push(log)
+                        })
+
+                },
+                selectLog: function (item) {
+                    let itemCopy = item.copy()
+                    window.rootComponent.children['0:1:1088'].data.objId = item.id
+                    window.rootComponent.children['0:1:1088'].data.entryData = {
+                        date: itemCopy.date,
+                        type: itemCopy.type,
+                        comment: itemCopy.comment
+                    }
+                },
+                getLogsWithPredictions: function (logs) {
+                    let endDate = new Date()
+                    endDate.setDate(endDate.getDate() + 1)
+                    endDate.setHours(Math.min(9, endDate.getHours()))
+                    return getLogsWithPredictions(logs, endDate)
+                }
+            }
+        })
+        setInterval(getData, 10000)
+        getData()
+    }
+
+    document.addEventListener('DOMContentLoaded', init)
+</script>
+<script type="text/html" id="create-form-template">
+    <form>
+        <div class="mb-3">
+            <label for="dt" class="form-label">Дата</label>
+            <input type="datetime-local" class="form-control" id="dt"
+                   :value="{{ actions.formatDate(self.entryData.date)}}"
+                   @on:change="actions.setDatetime(self.entryData, event.target.valueAsNumber)"
+            >
+        </div>
+        <div class="mb-3">
+            <label for="comment" class="form-label">Комментарий</label>
+            <textarea class="form-control" name="comment" cols="24" rows="3" id="comment"
+                      @on:input="actions.setComment(self.entryData, event.target.value)"
+            >{{ self.entryData.comment }}</textarea>
+        </div>
+        <div @for="self.logtypes">
+            <div
+                    :class="p-2 m-1
+                            {{ loop.item.name === self.entryData.type?.name ? 'bg-secondary bg-gradient text-white' : ''}}"
+                    style="border: gray 1px dashed"
+                    @on:click="actions.selectType(self.entryData, loop.item)"
+            >
+                {{ loop.item.name }}
+            </div>
+        </div>
+        <div style="text-align: center">
+            <button @if="self.objId === ''" type="button" class="btn btn-sm btn-success"
+                    @on:click="actions.create(events)">Добавить
+            </button>
+            <button @else type="button" class="btn btn-sm btn-primary" @on:click="actions.update(events)">Обновить
+            </button>
+            <button type="button" class="btn btn-sm btn-secondary" @on:click="actions.clear()">Очистить</button>
+        </div>
+    </form>
+</script>
+<style>
+    :root {
+        --color: gray;
+        --color-error: red;
+    }
+
+    .log {
+        min-width: 50%;
+        display: flex;
+        flex-flow: row nowrap;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 4px;
+        margin-bottom: 4px;
+        border: solid 1px gray;
+        border-radius: 4px;
+    }
+
+    .gray {
+        color: var(--color);
+    }
+
+    .red {
+        color: var(--color-error);
+    }
+
+    .comment {
+        color: var(--color);
+        font-size: 0.8rem;
+    }
+</style>
+<script type="text/html" id="main-template">
+    <div class="row">
+        <create-form
+                :logtypes="{{ self.logTypes }}"
+                @on:create="{{ actions.createLog }}"
+                @on:update="{{ actions.updateLog }}"
+                class="col-sm-6 col-md-4 p-2 bg-light"
+        ></create-form>
+        <div class="col-sm-6 col-md-8">
+            <div class="row">
+                <h2 class="col-12">История и прогноз
+                    <button class="btn btn-sm btn-info" @on:click="actions.clearLogs()">Очистить все</button>
+                </h2>
+            </div>
+            <div @for="actions.getLogsWithPredictions(self.logs)">
+                <div :class="row border m-1 p-1 bg-light
+                {{ loop.item.isForecast ? 'border-primary' : ''}}
+                {{ loop.item.date < new Date && loop.item.isForecast ? 'red' : ''}}">
+                    <div :class="col-3">
+                        {{ loop.item.formattedDate()}}
+                    </div>
+                    <div class="col-6">
+                        <span>{{ loop.item.type.name }}</span>
+                        <em class="comment">{{ loop.item.comment || ''}}</em>
+                    </div>
+                    <div class="col-3 text-right" @if="{{ loop.item.isForecast }}">
+                        <button type="button" class="btn btn-sm btn-warning"
+                                @on:click="actions.selectNewLog(loop.item)">
+                            <span class="fa fa-add"></span>
+                        </button>
+                    </div>
+                    <div class="col-3 text-right" @else>
+                        <button type="button" class="btn btn-sm btn-warning" @on:click="actions.selectLog(loop.item)">
+                            <span class="fa fa-edit"></span>
+                        </button>
+                        <button type="button" class="btn btn-sm btn-danger" @on:click="actions.removeLog(loop.item)">
+                            <span class="fa fa-trash"></span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</script>
+<div id="root" class="container-lg"></div>
+</body>
+</html>
