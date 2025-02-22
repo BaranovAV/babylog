@@ -114,7 +114,7 @@
 
     function getData() {
         const types = getLogTypesMap(makeConfig())
-        fetch('/api/actions/', {}).then(response => response.json()).then(
+        fetch('/api/actions', {}).then(response => response.json()).then(
             json => {
                 window.rootComponent.data.logs.splice(0, window.rootComponent.data.logs.length)
                 window.rootComponent.data.logs.push(...json.map(v => {
@@ -193,7 +193,7 @@
             },
             actions: {
                 createLog: function (entryData) {
-                    fetch('/api/actions/', {
+                    fetch('/api/actions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'
@@ -238,13 +238,13 @@
                         })
                 },
                 clearLogs: function () {
-                    fetch('/api/actions/', {method: 'DELETE'})
+                    fetch('/api/actions', {method: 'DELETE'})
                         .then(response => {
                             this.logs.splice(0, this.logs.length)
                         })
                 },
                 selectNewLog: function (item) {
-                    fetch('/api/actions/', {
+                    fetch('/api/actions', {
                         method: 'POST',
                         headers: {
                             'Content-Type': 'application/json'

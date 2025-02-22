@@ -6,7 +6,7 @@ import pathlib
 
 
 urlpatterns = [
-    path('api/actions/', include('actionlog.urls')),
+    path('api/actions', include('actionlog.urls')),
     path('', login_required(lambda r: HttpResponse(pathlib.Path('core/templates/main.html').read_text())), name='main'),
-    path('lgn/', LoginView.as_view(template_name='login.html', next_page='main'), name='login'),
+    path('lgn', LoginView.as_view(template_name='login.html', next_page='main'), name='login'),
 ]
