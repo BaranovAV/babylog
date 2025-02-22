@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=600px, initial-scale=1">
-    <title>Test</title>
+    <title>Действия на ребенком</title>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
           integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
           crossorigin="anonymous" referrerpolicy="no-referrer"/>
@@ -13,7 +13,6 @@
 <body>
 <script src="static/mkreactor.js"></script>
 <script>
-
     const today = () => {
         let todayDate = new Date()
         todayDate.setHours(0, 0, 0, 0)
@@ -290,36 +289,40 @@
 </script>
 <script type="text/html" id="create-form-template">
     <form>
-        <div class="mb-3">
-            <label for="dt" class="form-label">Дата</label>
-            <input type="datetime-local" class="form-control" id="dt"
-                   :value="{{ actions.formatDate(self.entryData.date)}}"
-                   @on:change="actions.setDatetime(self.entryData, event.target.valueAsNumber)"
-            >
-        </div>
-        <div class="mb-3">
-            <label for="comment" class="form-label">Комментарий</label>
-            <textarea class="form-control" name="comment" cols="24" rows="3" id="comment"
-                      @on:input="actions.setComment(self.entryData, event.target.value)"
-            >{{ self.entryData.comment }}</textarea>
-        </div>
-        <div @for="self.logtypes">
-            <div
-                    :class="p-2 m-1
-                            {{ loop.item.name === self.entryData.type?.name ? 'bg-secondary bg-gradient text-white' : ''}}"
-                    style="border: gray 1px dashed"
-                    @on:click="actions.selectType(self.entryData, loop.item)"
-            >
-                {{ loop.item.name }}
+        <h2>New action</h2>
+        <div class="bg-light p-2">
+            <div class="mb-3">
+                <label for="dt" class="form-label">Дата</label>
+                <input type="datetime-local" class="form-control" id="dt"
+                       :value="{{ actions.formatDate(self.entryData.date)}}"
+                       @on:change="actions.setDatetime(self.entryData, event.target.valueAsNumber)"
+                >
             </div>
-        </div>
-        <div style="text-align: center">
-            <button @if="self.objId === ''" type="button" class="btn btn-sm btn-success"
-                    @on:click="actions.create(events)">Добавить
-            </button>
-            <button @else type="button" class="btn btn-sm btn-primary" @on:click="actions.update(events)">Обновить
-            </button>
-            <button type="button" class="btn btn-sm btn-secondary" @on:click="actions.clear()">Очистить</button>
+            <div class="mb-3">
+                <label for="comment" class="form-label">Комментарий</label>
+                <textarea class="form-control" name="comment" cols="24" rows="3" id="comment"
+                          @on:input="actions.setComment(self.entryData, event.target.value)"
+                >{{ self.entryData.comment }}</textarea>
+            </div>
+            <div @for="self.logtypes">
+                <div
+                        :class="p-2 m-1
+
+                                {{ loop.item.name === self.entryData.type?.name ? 'bg-secondary bg-gradient text-white' : ''}}"
+                        style="border: gray 1px dashed"
+                        @on:click="actions.selectType(self.entryData, loop.item)"
+                >
+                    {{ loop.item.name }}
+                </div>
+            </div>
+            <div style="text-align: center">
+                <button @if="self.objId === ''" type="button" class="btn btn-sm btn-success"
+                        @on:click="actions.create(events)">Добавить
+                </button>
+                <button @else type="button" class="btn btn-sm btn-primary" @on:click="actions.update(events)">Обновить
+                </button>
+                <button type="button" class="btn btn-sm btn-secondary" @on:click="actions.clear()">Очистить</button>
+            </div>
         </div>
     </form>
 </script>
@@ -361,7 +364,7 @@
                 :logtypes="{{ self.logTypes }}"
                 @on:create="{{ actions.createLog }}"
                 @on:update="{{ actions.updateLog }}"
-                class="col-sm-6 col-md-4 p-2 bg-light"
+                class="col-sm-6 col-md-4"
         ></create-form>
         <div class="col-sm-6 col-md-8">
             <div class="row">
@@ -399,6 +402,11 @@
         </div>
     </div>
 </script>
-<div id="root" class="container-lg"></div>
+<div class="container-lg">
+    <header>
+        <h1>Действия на ребенком</h1>
+    </header>
+    <main id="root"></main>
+</div>
 </body>
 </html>
