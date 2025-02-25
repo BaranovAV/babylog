@@ -1,19 +1,19 @@
 from pathlib import Path
+from .env import load_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Some sensitive settings
+env = load_env(BASE_DIR / 'core' / '.env')
 
-SECRET_KEY = 'django-insecure-8ua4-)tfkkc*ey^57+(#4p5w-q6ct38-a@gbc0i6!d895466#%'
-DEBUG = True
-ALLOWED_HOSTS = ['*']
+# Some sensitive settings
+SECRET_KEY = env.str('SECRET_KEY', default='TEST')
+DEBUG = env('DEBUG', cast=bool, default=False)
+ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['127.0.0.1'])
 
 # Auth settings
-
-LOGIN_URL='login'
+LOGIN_URL = 'login'
 
 # Application definition
-
 INSTALLED_APPS = [
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -54,33 +54,14 @@ TEMPLATES = [
 WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
-
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db' / 'db.sqlite3',
-    }
-}
-
-CACHES = {
-    "default": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": "redis://127.0.0.1:6379",
-        "OPTIONS": {
-            "db": "0",
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "SOCKET_CONNECT_TIMEOUT": 5,  # seconds
-            "SOCKET_TIMEOUT": 5,  # seconds
-        }
-    }
-}
+DATABASES = {'default': env.db()}
+CACHES = {"default": env.cache()}
+print(CACHES)
 
 # Internationalization
-
 LANGUAGE_CODE = 'ru'
 TIME_ZONE = 'UTC'
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 STATIC_URL = 'static/'
@@ -90,5 +71,4 @@ STATICFILES_DIRS = ['core/static']
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # Settings for actionlogs
-
 ACTIONLOG_TTL = 86400

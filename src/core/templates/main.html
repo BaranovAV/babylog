@@ -98,7 +98,7 @@
             ASLEEP = new LogType('Сон', 60 * 1.5, 'AWAKE-SLEEP'),
             MEALS = new LogType('Еда', 60 * 4, 'MEALS'),
             POO = new LogType('Подгузник', 60 * 4, 'POO'),
-            TOOTH = new LogType('Зубы', 60 * 12, 'TOOTH')
+            TOOTH = new LogType('Зубы', 60 * 8, 'TOOTH')
         AWAKE.setNext(ASLEEP)
         ASLEEP.setNext(AWAKE)
         return [AWAKE, ASLEEP, MEALS, POO, TOOTH]
