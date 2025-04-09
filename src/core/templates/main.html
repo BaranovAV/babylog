@@ -30,9 +30,9 @@
     }
 
     const makeConfig = () => {
-        let AWAKE = new LogType('Бодрствование', 60 * 3, 'AWAKE-SLEEP'),
-            ASLEEP = new LogType('Сон', 60 * 1.5, 'AWAKE-SLEEP'),
-            MEALS = new LogType('Еда', 60 * 4, 'MEALS'),
+        let AWAKE = new LogType('Бодрствование', 60 * 3 + 20, 'AWAKE-SLEEP'),
+            ASLEEP = new LogType('Сон', 60, 'AWAKE-SLEEP'),
+            MEALS = new LogType('Еда', 60 * 4 + 20, 'MEALS'),
             PEE = new LogType('Подгузник', 60 * 4, 'DIAPER'),
             POO = new LogType('Подгузник (грязный)', 60 * 4, 'DIAPER'),
             TOOTH = new LogType('Зубы', 60 * 6, 'TOOTH'),
