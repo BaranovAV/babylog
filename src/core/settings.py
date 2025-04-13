@@ -8,7 +8,7 @@ env = load_env(BASE_DIR / 'core' / '.env')
 # Some sensitive settings
 SECRET_KEY = env.str('SECRET_KEY', default='TEST')
 DEBUG = env('DEBUG', cast=bool, default=False)
-ALLOWED_HOSTS = env.list("ALLOWED_HOSTS", default=['127.0.0.1'])
+ALLOWED_HOSTS = ['*']
 
 # Auth settings
 LOGIN_URL = 'login'
