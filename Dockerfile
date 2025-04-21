@@ -13,11 +13,7 @@ FROM python:3.10-slim-bookworm AS app
 
 WORKDIR /app
 
-RUN <<EOF
-apt update && apt install -y gcc
-pip install -U pip
-pip install uwsgi
-EOF
+RUN apt update && apt install -y gcc && pip install -U pip && pip install uwsgi
 
 COPY --from=requirements-builder /requirements.txt ./
 

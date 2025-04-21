@@ -1,6 +1,5 @@
 import datetime
-from redis_om import HashModel, Migrator, Field
-from django.core.cache import cache
+from redis_om import HashModel, Field
 
 
 class ActionLog(HashModel):
@@ -11,11 +10,3 @@ class ActionLog(HashModel):
 
     class Meta:
         global_key_prefix = 'actionlog'
-
-        @classmethod
-        @property
-        def database(cls):
-            return cache.client.get_client(write=True)
-
-
-Migrator().run()

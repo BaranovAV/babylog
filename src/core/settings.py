@@ -9,6 +9,7 @@ env = load_env(BASE_DIR / 'core' / '.env')
 SECRET_KEY = env.str('SECRET_KEY', default='TEST')
 DEBUG = env('DEBUG', cast=bool, default=False)
 ALLOWED_HOSTS = ['*']
+CSRF_TRUSTED_ORIGINS = env.list("CSRF_TRUSTED_ORIGINS", default=[])
 
 # Auth settings
 LOGIN_URL = 'login'
@@ -55,8 +56,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 
 # Database
 DATABASES = {'default': env.db()}
-CACHES = {"default": env.cache()}
-print(CACHES)
 
 # Internationalization
 LANGUAGE_CODE = 'ru'
