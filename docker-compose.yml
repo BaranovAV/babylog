@@ -3,3 +3,16 @@ services:
     image: redis/redis-stack-server:latest
     ports:
       - 6379:6379
+    networks:
+      - babylog
+  babylog:
+    image: babylog:latest
+    env_file:
+      - ./.env
+    ports:
+      - 8000:8000
+    networks:
+      - babylog
+
+networks:
+  babylog:
