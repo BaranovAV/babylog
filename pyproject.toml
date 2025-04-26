@@ -15,6 +15,11 @@ django-environ = "^0.12.0"
 [tool.poetry.group.dev.dependencies]
 mypy = "^1.15.0"
 django-stubs = {extras = ["compatible-mypy"], version = "^5.1.3"}
+flake8 = "^7.2.0"
+flake8-pyproject = "^1.2.3"
+isort = "^6.0.1"
+flake8-builtins = "^2.5.0"
+pep8-naming = "^0.14.1"
 
 [build-system]
 requires = ["poetry-core"]
@@ -29,3 +34,11 @@ plugins = ["mypy_django_plugin.main"]
 
 [tool.django-stubs]
 django_settings_module = "core.settings"
+
+[tool.flake8]
+max_line_length = 120
+max_doc_length = 120
+indent_size = 4
+show_source = true
+statistics = true
+max_complexity = 10
