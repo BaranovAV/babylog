@@ -6,13 +6,17 @@ services:
     networks:
       - babylog
   babylog:
-    image: babylog:latest
+    build:
+      context: .
+      target: app
     env_file:
       - ./.env
     ports:
       - 8000:8000
     networks:
       - babylog
+    volumes:
+      - ./src/db:/app/db
 
 networks:
   babylog:

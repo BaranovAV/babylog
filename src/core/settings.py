@@ -3,7 +3,7 @@ from .env import load_env
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = load_env(BASE_DIR / 'core' / '.env')
+env = load_env(BASE_DIR.parent / '.env')
 
 # Some sensitive settings
 SECRET_KEY = env.str('SECRET_KEY', default='TEST')
