@@ -305,6 +305,7 @@
             <div class="btn-group-vertical mb-3" style="width: 100%" role="group">
                 <div class="btn-group btn-group-sm" style="width: 100%" role="group">
                     <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(-60)">-1ч</button>
+                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(-15)">-15м</button>
                     <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(-5)">-5м</button>
                     <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(-1)">-1м</button>
                 </div>
@@ -316,9 +317,10 @@
                     <button type="button" class="btn btn-outline-secondary" @on:click="actions.setDatetimeNow()">Сейчас</button>
                 </div>
                 <div class="btn-group btn-group-sm" style="width: 100%" role="group">
-                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(1)">+1м</button>
-                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(5)">+5м</button>
                     <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(60)">+1ч</button>
+                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(15)">+15м</button>
+                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(5)">+5м</button>
+                    <button type="button" class="btn btn-outline-secondary" @on:click="actions.addMinutes(1)">+1м</button>
                 </div>
             </div>
 
