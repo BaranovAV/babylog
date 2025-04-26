@@ -6,6 +6,8 @@ services:
     networks:
       - babylog
   babylog:
+    depends_on:
+      - redis
     build:
       context: .
       target: app

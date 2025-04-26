@@ -21,4 +21,4 @@ RUN pip install -r requirements.txt
 
 COPY src ./
 
-CMD uwsgi --http :8000 --module core.wsgi
+CMD python manage.py redis_migration && uwsgi --http :8000 --module core.wsgi
