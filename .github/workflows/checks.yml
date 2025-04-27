@@ -1,0 +1,31 @@
+name: Code checks
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Install python
+        uses: actions/setup-python@v5
+        with:
+          python-version-file: 'pyproject.toml'
+          cache: 'poetry'
+      - name: Install poetry packages
+        run: poetry install --with dev --no-root
+      - name: Set default environment
+        run: cp ./.env.ci ./.env
+      - name: Check with mypy
+        run: poetry run mypy src
+      - name: Check with flake8
+        run: poetry run flake8 src
