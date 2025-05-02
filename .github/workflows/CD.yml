@@ -1,0 +1,45 @@
+name: Docker Image CI
+
+env:
+  ROOT_DIR: "/opt/app/babylog"
+
+on:
+  push:
+    branches: [ "master" ]
+
+jobs:
+
+  deploy:
+
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - uses: actions/checkout@v4
+
+      - name: send files to server
+        uses: appleboy/scp-action@v1
+        with:
+          debug: true
+          overwrite: true
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWD }}
+          port: ${{ secrets.PORT }}
+          source: "src/*,pyproject.toml,poetry.lock,nginx.conf,Dockerfile,docker-compose.yml,.flake8"
+          target: ${{ env.ROOT_DIR }}
+          tar_tmp_path: ${{ env.ROOT_DIR }}
+
+      - name: multiple command
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USERNAME }}
+          password: ${{ secrets.PASSWD }}
+          port: ${{ secrets.PORT }}
+          envs: ROOT_DIR
+          script: |
+            cd "$ROOT_DIR"
+            sudo docker stop babylog-babylog-1
+            sudo docker compose up --build -d
+            sudo service nginx reload
