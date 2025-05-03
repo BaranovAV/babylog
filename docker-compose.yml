@@ -6,6 +6,7 @@ services:
     networks:
       - babylog
   babylog:
+    container_name: babylog-app
     depends_on:
       - redis
     build:

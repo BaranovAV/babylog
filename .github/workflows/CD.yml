@@ -1,17 +1,20 @@
-name: Docker Image CI
+name: Deploy
 
 env:
   ROOT_DIR: "/opt/app/babylog"
 
 on:
-  push:
+  workflow_run:
+    workflows: [ "CI" ]
     branches: [ "master" ]
+    types: [ "completed" ]
 
 jobs:
 
   deploy:
 
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' && github.event_name != 'pull_request' }}
 
     steps:
 
@@ -26,7 +29,7 @@ jobs:
           username: ${{ secrets.USERNAME }}
           password: ${{ secrets.PASSWD }}
           port: ${{ secrets.PORT }}
-          source: "src/*,pyproject.toml,poetry.lock,nginx.conf,Dockerfile,docker-compose.yml,.flake8"
+          source: "src/*,pyproject.toml,poetry.lock,nginx.conf,Dockerfile,docker-compose.yml"
           target: ${{ env.ROOT_DIR }}
           tar_tmp_path: ${{ env.ROOT_DIR }}
 
@@ -40,6 +43,6 @@ jobs:
           envs: ROOT_DIR
           script: |
             cd "$ROOT_DIR"
-            sudo docker stop babylog-babylog-1
+            sudo docker stop babylog-app
             sudo docker compose up --build -d
             sudo service nginx reload

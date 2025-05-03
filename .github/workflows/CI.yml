@@ -1,15 +1,13 @@
-name: Code checks
+name: CI
 
 on:
   push:
-    branches:
-      - master
+    branches: [ "master" ]
   pull_request:
-    branches:
-      - master
+    branches: [ "master" ]
 
 jobs:
-  validate:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repo
@@ -25,7 +23,7 @@ jobs:
         run: poetry install --with dev --no-root
       - name: Set default environment
         run: cp ./.env.ci ./.env
-      - name: Check with mypy
-        run: poetry run mypy src
-      - name: Check with flake8
-        run: poetry run flake8 src
+      - name: lint
+        run: |
+          poetry run mypy src
+          poetry run flake8 src
