@@ -1,5 +1,6 @@
 import datetime
-from redis_om import HashModel, Field
+
+from redis_om import Field, HashModel
 
 
 class ActionLog(HashModel):
@@ -9,4 +10,4 @@ class ActionLog(HashModel):
     comment: str
 
     class Meta:
-        global_key_prefix = 'actionlog'
+        global_key_prefix = "actionlog"

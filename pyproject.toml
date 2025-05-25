@@ -6,7 +6,7 @@ authors = ["BaranovAV <baranovab.1992@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "~=3.10"
 django = "^5.1.6"
 django-redis = "^5.4.0"
 redis-om = "^0.3.3"
@@ -20,6 +20,7 @@ flake8-pyproject = "^1.2.3"
 isort = "^6.0.1"
 flake8-builtins = "^2.5.0"
 pep8-naming = "^0.14.1"
+pre-commit = "^4.2.0"
 
 [build-system]
 requires = ["poetry-core"]
@@ -43,3 +44,6 @@ indent_size = 4
 show_source = true
 statistics = true
 max_complexity = 10
+
+[tool.isort]
+profile = "black"
