@@ -72,3 +72,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Settings for actionlogs
 ACTIONLOG_TTL = 86400
+
+SESSION_COOKIE_AGE = 3 * 86400
+SESSION_SAVE_EVERY_REQUEST = True
